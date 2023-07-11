@@ -24,18 +24,19 @@ class DataStore(ABC):
         Return a list of document ids.
         """
         # Delete any existing vectors for documents with the input document ids
-        await asyncio.gather(
-            *[
-                self.delete(
-                    filter=DocumentMetadataFilter(
-                        document_id=document.id,
-                    ),
-                    delete_all=False,
-                )
-                for document in documents
-                if document.id
-            ]
-        )
+        if hasattr(self, "delete"):
+            await asyncio.gather(
+                *[
+                    self.delete(
+                        filter=DocumentMetadataFilter(
+                            document_id=document.id,
+                        ),
+                        delete_all=False,
+                    )
+                    for document in documents
+                    if document.id
+                ]
+            )
 
         chunks = get_document_chunks(documents, chunk_token_size)
 
@@ -47,7 +48,6 @@ class DataStore(ABC):
         Takes in a list of list of document chunks and inserts them into the database.
         Return a list of document ids.
         """
-
         raise NotImplementedError
 
     async def query(self, queries: List[Query]) -> List[QueryResult]:
@@ -71,7 +71,6 @@ class DataStore(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     async def delete(
         self,
         ids: Optional[List[str]] = None,
@@ -83,4 +82,7 @@ class DataStore(ABC):
         Multiple parameters can be used at once.
         Returns whether the operation was successful.
         """
-        raise NotImplementedError
+        if hasattr(self, "_delete"):
+            return await self._delete(ids, filter, delete_all)
+        else:
+            return True
