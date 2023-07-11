@@ -1,7 +1,6 @@
 from datastore.datastore import DataStore
 import os
 
-
 async def get_datastore() -> DataStore:
     datastore = os.environ.get("DATASTORE")
     assert datastore is not None
@@ -15,7 +14,6 @@ async def get_datastore() -> DataStore:
             from datastore.providers.llama_datastore import LlamaDataStore
 
             return LlamaDataStore()
-
         case "pinecone":
             from datastore.providers.pinecone_datastore import PineconeDataStore
 
@@ -56,8 +54,12 @@ async def get_datastore() -> DataStore:
             from datastore.providers.analyticdb_datastore import AnalyticDBDataStore
 
             return AnalyticDBDataStore()
+        case "vlite":  # New case for VLite
+            from datastore.providers.vlite_datastore import VLiteDataStore  # Import VLiteDataStore
+
+            return VLiteDataStore()  # Return an instance of VLiteDataStore
         case _:
             raise ValueError(
                 f"Unsupported vector database: {datastore}. "
-                f"Try one of the following: llama, pinecone, weaviate, milvus, zilliz, redis, or qdrant"
+                f"Try one of the following: llama, pinecone, weaviate, milvus, zilliz, redis, qdrant, azuresearch, supabase, postgres, analyticdb, or vlite"  # Add "vlite" to the list of supported databases
             )
